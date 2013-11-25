@@ -8,7 +8,6 @@ from scipy.stats import distributions
 # TODO:
 # * actually solve (31) of Blinnikov & Moessner
 # * numerical stability: multiply factorials in logspace?
-# * cdf: intefrals of Hermites
 # * ppf & friends: Cornish & Fisher series, or tabulate/solve
 # * tests from scipy/stats: roundtrips + rvs
 
@@ -50,6 +49,7 @@ def _faa_di_bruno_partitions(n):
         return _faa_di_bruno_cache[n]
     except KeyError:
         # TODO: higher order terms
+        # solve Eq. (31) from Blinninkov & Moessner here
         raise NotImplementedError('Higher order terms not yet implemented.')
 
 
@@ -141,13 +141,23 @@ class ExpandedNormal(distributions.rv_continuous):
         if len(cum) < 2:
             raise ValueError("At least two cumulants are needed.")
         self._coef, self._mu, self._sigma = self._compute_coefs_pdf(cum)
-        self._herm = HermiteE(self._coef)
+        self._herm_pdf = HermiteE(self._coef)
+        if self._coef.size > 2:
+            self._herm_cdf = HermiteE(-self._coef[1:])
+        else:
+            self._herm_cdf = lambda x: 0.
+
         kwds.update({'momtype': 0})   # use pdf, not ppf in self.moment()
         super(ExpandedNormal, self).__init__(**kwds)
 
     def _pdf(self, x):
         y = (x - self._mu) / self._sigma
-        return self._herm(y) * distributions._norm_pdf(y) / self._sigma
+        return self._herm_pdf(y) * distributions._norm_pdf(y) / self._sigma
+
+    def _cdf(self, x):
+        y = (x - self._mu) / self._sigma
+        return (distributions._norm_cdf(y) + 
+                self._herm_cdf(y) * distributions._norm_pdf(y))
 
     def _compute_coefs_pdf(self, cum):
         # scale cumulants by \sigma
