@@ -128,10 +128,10 @@ class ExpandedNormal(distributions.rv_continuous):
 
     References
     ----------
-    [1]_ E.A. Cornish and R.A. Fisher, Moments and cumulants in the 
-         specification of distributions, Revue de l'Institut Internat. 
-         de Statistique. 5: 307 (1938), reprinted in 
-         R.A. Fisher, Contributions to Mathematical Statistics. Wiley, 1950. 
+    [1]_ E.A. Cornish and R.A. Fisher, Moments and cumulants in the
+         specification of distributions, Revue de l'Institut Internat.
+         de Statistique. 5: 307 (1938), reprinted in
+         R.A. Fisher, Contributions to Mathematical Statistics. Wiley, 1950.
     [2]_ http://en.wikipedia.org/wiki/Edgeworth_series
     [3]_ S. Blinnikov and R. Moessner, Expansions for nearly Gaussian
         distributions, Astron. Astrophys. Suppl. Ser. 130, 193 (1998)
@@ -156,7 +156,7 @@ class ExpandedNormal(distributions.rv_continuous):
 
     def _cdf(self, x):
         y = (x - self._mu) / self._sigma
-        return (distributions._norm_cdf(y) + 
+        return (distributions._norm_cdf(y) +
                 self._herm_cdf(y) * distributions._norm_pdf(y))
 
     def _compute_coefs_pdf(self, cum):

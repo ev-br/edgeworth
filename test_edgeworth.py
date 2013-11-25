@@ -109,22 +109,27 @@ class TestExpandedNormal(TestCase):
         # compate the pdf
         m, s = df, np.sqrt(2*df)
         x = np.linspace(m - s, m + s, 10)
-        assert_allclose(ne.pdf(x), stats.chi2.pdf(x, df=df), 
+        assert_allclose(ne.pdf(x), stats.chi2.pdf(x, df=df),
                 atol=1e-4, rtol=1e-5)
 
-        # check the pdf-cdf roundtrip
+        # pdf-cdf roundtrip
         check_pdf(ne, arg=(), msg='')
+
+        # cdf-ppf roundtrip
+        check_cdf_ppf(ne, arg=(), msg='')
 
 
 ## stolen verbatim from scipy/stats/tests/test_continuous_extra.py
 DECIMAL = 8
+
 def check_pdf(distfn, arg, msg):
     # compares pdf at median with numerical derivative of cdf
     median = distfn.ppf(0.5, *arg)
     eps = 1e-6
     pdfv = distfn.pdf(median, *arg)
     if (pdfv < 1e-4) or (pdfv > 1e4):
-        # avoid checking a case where pdf is close to zero or huge (singularity)
+        # avoid checking a case where pdf is close to zero
+        # or huge (singularity)
         median = median + 0.1
         pdfv = distfn.pdf(median, *arg)
     cdfdiff = (distfn.cdf(median + eps, *arg) -
@@ -133,6 +138,14 @@ def check_pdf(distfn, arg, msg):
     # actually, this works pretty well
     npt.assert_almost_equal(pdfv, cdfdiff,
                 decimal=DECIMAL, err_msg=msg + ' - cdf-pdf relationship')
+
+
+def check_cdf_ppf(distfn, arg, msg):
+    values = [0.001, 0.5, 0.999]
+    npt.assert_almost_equal(distfn.cdf(distfn.ppf(values, *arg), *arg),
+                            values, decimal=DECIMAL, err_msg=msg +
+                            ' - cdf-ppf roundtrip')
+
 
 if __name__ == "__main__":
     run_module_suite()
