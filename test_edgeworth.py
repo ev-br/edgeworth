@@ -118,6 +118,11 @@ class TestExpandedNormal(TestCase):
         # cdf-ppf roundtrip
         check_cdf_ppf(ne, arg=(), msg='')
 
+        # generate rvs & run a KS test
+        np.random.seed(765456)
+        rvs = ne.rvs(size=500)
+        check_distribution_rvs(ne, args=(), alpha=0.01, rvs=rvs)
+
 
 ## stolen verbatim from scipy/stats/tests/test_continuous_extra.py
 DECIMAL = 8
@@ -145,6 +150,17 @@ def check_cdf_ppf(distfn, arg, msg):
     npt.assert_almost_equal(distfn.cdf(distfn.ppf(values, *arg), *arg),
                             values, decimal=DECIMAL, err_msg=msg +
                             ' - cdf-ppf roundtrip')
+
+
+def check_distribution_rvs(distfn, args, alpha, rvs):
+    ## signature changed to avoid calling a distribution by name
+    # test from scipy.stats.tests
+    # this version reuses existing random variables
+    D,pval = stats.kstest(rvs, distfn.cdf, args=args, N=1000)
+    if (pval < alpha):
+        D,pval = stats.kstest(distfn.rvs, distfn.cdf, args=args, N=1000)
+        npt.assert_(pval > alpha, "D = " + str(D) + "; pval = " + str(pval) +
+               "; alpha = " + str(alpha) + "\nargs = " + str(args))
 
 
 if __name__ == "__main__":
