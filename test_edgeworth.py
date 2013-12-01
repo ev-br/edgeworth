@@ -1,4 +1,7 @@
 from __future__ import division, print_function, absolute_import
+
+import warnings
+
 import numpy as np
 from numpy.testing import (TestCase, run_module_suite, assert_equal,
         assert_raises, assert_allclose)
@@ -7,7 +10,6 @@ import numpy.testing as npt
 from hermite import HermiteE
 from scipy.misc import factorial, factorial2
 from scipy.special import gamma
-
 import scipy.stats as stats
 
 from edgeworth import (_faa_di_bruno_partitions, cumulant_from_moments,
@@ -125,6 +127,17 @@ class TestExpandedNormal(TestCase):
         np.random.seed(765456)
         rvs = ne.rvs(size=500)
         check_distribution_rvs(ne, args=(), alpha=0.01, rvs=rvs)
+
+    def test_pdf_no_roots(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            ne = ExpandedNormal([0, 1])
+            ne = ExpandedNormal([0, 1, 0.1, 0.1])
+
+    def test_pdf_has_roots(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", UserWarning)
+            assert_raises(UserWarning, ExpandedNormal, [0, 1, 101])
 
 
 ## stolen verbatim from scipy/stats/tests/test_continuous_extra.py

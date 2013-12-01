@@ -1,5 +1,7 @@
 from __future__ import division, print_function, absolute_import
 
+import warnings
+
 import numpy as np
 from hermite import HermiteE
 from scipy.misc import factorial
@@ -10,8 +12,6 @@ from scipy.stats import distributions
 # * numerical stability: multiply factorials in logspace?
 # * ppf & friends: Cornish & Fisher series, or tabulate/solve
 # * tests from scipy/stats: roundtrips + rvs
-# * add sf
-# * warn if pdf < 0
 
 _faa_di_bruno_cache = {
         1: [[(1, 1)]],
@@ -148,6 +148,13 @@ class ExpandedNormal(distributions.rv_continuous):
         else:
             self._herm_cdf = lambda x: 0.
 
+        # warn if pdf(x) < 0 for some values of x within 4 sigma 
+        r = np.real_if_close(self._herm_pdf.roots())
+        r = (r - self._mu) / self._sigma
+        if r[(np.imag(r) == 0) & (np.abs(r) < 4)].any():
+            mesg = 'PDF has zeros at %s ' % r
+            warnings.warn(mesg, UserWarning)
+
         kwds.update({'momtype': 0})   # use pdf, not ppf in self.moment()
         super(ExpandedNormal, self).__init__(**kwds)
 
@@ -164,7 +171,6 @@ class ExpandedNormal(distributions.rv_continuous):
         y = (x - self._mu) / self._sigma
         return (distributions._norm_sf(y) -
                 self._herm_cdf(y) * distributions._norm_pdf(y))
-
 
     def _compute_coefs_pdf(self, cum):
         # scale cumulants by \sigma
