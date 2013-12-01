@@ -118,6 +118,9 @@ class TestExpandedNormal(TestCase):
         # cdf-ppf roundtrip
         check_cdf_ppf(ne, arg=(), msg='')
 
+        # cdf + sf == 1
+        check_cdf_sf(ne, arg=(), msg='')
+
         # generate rvs & run a KS test
         np.random.seed(765456)
         rvs = ne.rvs(size=500)
@@ -148,8 +151,14 @@ def check_pdf(distfn, arg, msg):
 def check_cdf_ppf(distfn, arg, msg):
     values = [0.001, 0.5, 0.999]
     npt.assert_almost_equal(distfn.cdf(distfn.ppf(values, *arg), *arg),
-                            values, decimal=DECIMAL, err_msg=msg +
-                            ' - cdf-ppf roundtrip')
+            values, decimal=DECIMAL, err_msg=msg + ' - cdf-ppf roundtrip')
+
+
+def check_cdf_sf(distfn, arg, msg):
+    values = [0.001, 0.5, 0.999]
+    npt.assert_almost_equal(distfn.cdf(values, *arg),
+            1. - distfn.sf(values, *arg),
+            decimal=DECIMAL, err_msg=msg +' - sf+cdf == 1')
 
 
 def check_distribution_rvs(distfn, args, alpha, rvs):

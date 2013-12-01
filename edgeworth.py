@@ -10,7 +10,8 @@ from scipy.stats import distributions
 # * numerical stability: multiply factorials in logspace?
 # * ppf & friends: Cornish & Fisher series, or tabulate/solve
 # * tests from scipy/stats: roundtrips + rvs
-
+# * add sf
+# * warn if pdf < 0
 
 _faa_di_bruno_cache = {
         1: [[(1, 1)]],
@@ -158,6 +159,12 @@ class ExpandedNormal(distributions.rv_continuous):
         y = (x - self._mu) / self._sigma
         return (distributions._norm_cdf(y) +
                 self._herm_cdf(y) * distributions._norm_pdf(y))
+
+    def _sf(self, x):
+        y = (x - self._mu) / self._sigma
+        return (distributions._norm_sf(y) -
+                self._herm_cdf(y) * distributions._norm_pdf(y))
+
 
     def _compute_coefs_pdf(self, cum):
         # scale cumulants by \sigma
