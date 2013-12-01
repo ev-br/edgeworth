@@ -21,21 +21,34 @@ def _hermnorm(N):
     return plist
 
 
-def _HE(coef):
+class HermiteEStub(object):
     """Cook up an HermiteE replacement from _hermnorm."""
-    h = _hermnorm(len(coef))
-    def f(x):
-        return sum((1 - 2*(j%2)) * c * h[j](x) for (j, c) in enumerate(coef))
-    return f
+    def __init__(self, coef):
+        self.coef = list(coef)
+        h = _hermnorm(len(coef))
+        self._func = np.poly1d([0])
+        for j in range(len(coef)):
+            self._func += (1 - 2*(j%2)) * coef[j] * h[j]
+
+    def __call__(self, x):
+        return self._func(x)
+
+    def roots(self):
+        return np.roots(self._func.coeffs)
 
 try:
     from numpy.polynomial.hermite_e import HermiteE
 except ImportError:  # numpy < 1.6
-    HermiteE = _HE
+    HermiteE = HermiteEStub
 
 
 if __name__ == "__main__":
-    coef = np.random.random(8)
+    np.random.seed(12345)
+    coef = np.random.random(3)
     xx = np.random.random(1000) * 20 - 10
-    np.testing.assert_allclose(HermiteE(coef)(xx), _HE(coef)(xx))
+
+    np.testing.assert_allclose(HermiteE(coef)(xx),
+                               HermiteEStub(coef)(xx))
+    np.testing.assert_allclose(np.sort(HermiteE(coef).roots()),
+                               np.sort(HermiteEStub(coef).roots()))
 

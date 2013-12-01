@@ -3,7 +3,7 @@ from __future__ import division, print_function, absolute_import
 import warnings
 
 import numpy as np
-from hermite import HermiteE
+from _hermite import HermiteE
 from scipy.misc import factorial
 from scipy.stats import distributions
 
@@ -11,7 +11,7 @@ from scipy.stats import distributions
 # * actually solve (31) of Blinnikov & Moessner
 # * numerical stability: multiply factorials in logspace?
 # * ppf & friends: Cornish & Fisher series, or tabulate/solve
-# * tests from scipy/stats: roundtrips + rvs
+
 
 _faa_di_bruno_cache = {
         1: [[(1, 1)]],

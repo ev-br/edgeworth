@@ -7,7 +7,7 @@ from numpy.testing import (TestCase, run_module_suite, assert_equal,
         assert_raises, assert_allclose)
 import numpy.testing as npt
 
-from hermite import HermiteE
+from _hermite import HermiteE
 from scipy.misc import factorial, factorial2
 from scipy.special import gamma
 import scipy.stats as stats
